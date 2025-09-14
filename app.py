@@ -101,7 +101,7 @@ def analyze_with_ollama(text):
         """
         
         payload = {
-            "model": "gemma3:latest",
+            "model": "gemma3:27b-it-qat",
             "prompt": prompt,
             "stream": False
         }
