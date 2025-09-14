@@ -63,20 +63,48 @@ def preprocess_image(image_path):
     return processed_path
 
 def extract_text_ocr(image_path):
-    """Extract text from image using OCR"""
+    """Extract text from image using OCR with multiple configurations"""
     try:
-        # Preprocess image
-        processed_path = preprocess_image(image_path)
+        # Try multiple OCR configurations for better results
+        configs = [
+            '--oem 3 --psm 6',  # Default
+            '--oem 3 --psm 4',  # Single column  
+            '--oem 3 --psm 11', # Sparse text
+            '--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,()-: '
+        ]
         
-        # Use Tesseract to extract text
-        custom_config = r'--oem 3 --psm 6'
-        text = pytesseract.image_to_string(Image.open(processed_path), config=custom_config)
+        best_text = ""
         
-        # Clean up processed image
-        if os.path.exists(processed_path):
-            os.remove(processed_path)
+        # Test original image first
+        for config in configs:
+            try:
+                text = pytesseract.image_to_string(Image.open(image_path), config=config)
+                text = text.strip()
+                if len(text) > len(best_text):
+                    best_text = text
+            except:
+                continue
         
-        return text.strip()
+        # Also try preprocessed image
+        try:
+            processed_path = preprocess_image(image_path)
+            if processed_path:
+                for config in configs:
+                    try:
+                        text = pytesseract.image_to_string(Image.open(processed_path), config=config)
+                        text = text.strip()
+                        if len(text) > len(best_text):
+                            best_text = text
+                    except:
+                        continue
+                
+                # Clean up processed image
+                if os.path.exists(processed_path):
+                    os.remove(processed_path)
+        except:
+            pass
+        
+        return best_text
     except Exception as e:
         print(f"OCR Error: {str(e)}")
         return ""
