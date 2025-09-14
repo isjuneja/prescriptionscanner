@@ -106,7 +106,7 @@ def analyze_with_ollama(text):
             "stream": False
         }
         
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        response = requests.post(OLLAMA_URL, json=payload, timeout=120)
         
         if response.status_code == 200:
             result = response.json()

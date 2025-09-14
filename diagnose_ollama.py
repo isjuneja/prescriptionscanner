@@ -79,7 +79,7 @@ def test_model_generation():
             "prompt": "Test prompt",
             "stream": False
         }
-        response = requests.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=30)
+        response = requests.post(f"{OLLAMA_URL}/api/generate", json=payload, timeout=120)
         return response.status_code == 200, response.text
     except Exception as e:
         return False, str(e)
