@@ -113,19 +113,41 @@ def analyze_with_ollama(text):
     """Analyze extracted text using Ollama Gemma3 model"""
     try:
         prompt = f"""
-        Analyze the following prescription text and extract structured information:
-        
-        Text: {text}
-        
-        Please extract and return a JSON with the following fields:
-        - patient_name: Patient's name if mentioned
-        - doctor_name: Doctor's name if mentioned
-        - medications: List of medications with name, dosage, and frequency
-        - instructions: Any special instructions
-        - date: Prescription date if mentioned
-        - pharmacy: Pharmacy information if mentioned
-        
-        Return only valid JSON format.
+        You are a medical prescription analyzer. Analyze this OCR-extracted text from a prescription image and extract key information.
+
+        IMPORTANT: This text may contain OCR errors, misspellings, and poor formatting. Look for patterns and context clues.
+
+        Text to analyze:
+        {text}
+
+        Extract and return ONLY a valid JSON object with these exact fields:
+        - patient_name: Extract patient's name (look for "Patient:", "Name:", "Mr.", "Mrs.", "Ms." followed by a name)
+        - doctor_name: Extract doctor's name (look for "Dr.", "Doctor", medical credentials like MD, MBBS)
+        - medications: Array of objects with name, dosage, frequency (look for drug names followed by mg/ml/tablet, then dosing instructions like "twice daily", "morning", "evening")
+        - instructions: General instructions or notes (look for "Instructions:", "Note:", "Sig:", special directions)
+        - date: Prescription date (look for date patterns like DD/MM/YYYY, MM-DD-YYYY)
+        - pharmacy: Pharmacy name/address if mentioned
+
+        MEDICATION DETECTION TIPS:
+        - Look for common drug suffixes: -in, -ol, -ide, -ine, -one, -ate
+        - Look for dosage patterns: number + mg/ml/tablet/capsule
+        - Look for frequency words: daily, twice, morning, evening, before/after meals
+        - Common medications: Paracetamol, Ibuprofen, Amoxicillin, Metformin, etc.
+
+        Example format:
+        {
+          "patient_name": "John Doe",
+          "doctor_name": "Dr. Smith",
+          "medications": [
+            {"name": "Paracetamol", "dosage": "500mg", "frequency": "twice daily"},
+            {"name": "Amoxicillin", "dosage": "250mg", "frequency": "three times daily"}
+          ],
+          "instructions": "Take with food",
+          "date": "13/09/2025",
+          "pharmacy": "City Pharmacy"
+        }
+
+        Return ONLY the JSON object, no other text:
         """
         
         payload = {
