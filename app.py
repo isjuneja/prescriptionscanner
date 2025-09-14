@@ -179,7 +179,7 @@ def analyze_with_ollama(text):
     except requests.exceptions.RequestException:
         return json.dumps({"error": "Ollama service not available. Please ensure Ollama is running locally."}, indent=2)
     except Exception as e:
-        return json.dumps({"error": f"Error analyzing text: {str(e)}"}, indent=2)
+        return json.dumps({"error": "Error analyzing text: " + str(e)}, indent=2)
 
 @app.route('/')
 def index():
