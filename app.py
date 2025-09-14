@@ -112,19 +112,19 @@ def extract_text_ocr(image_path):
 def analyze_with_ollama(text):
     """Analyze extracted text using Ollama Gemma3 model"""
     try:
-        prompt = f"""
+        prompt = """
         You are a medical prescription analyzer. Analyze this OCR-extracted text from a prescription image and extract key information.
 
         IMPORTANT: This text may contain OCR errors, misspellings, and poor formatting. Look for patterns and context clues.
 
         Text to analyze:
-        {text}
+        """ + text + """
 
         Extract and return ONLY a valid JSON object with these exact fields:
-        - patient_name: Extract patient's name (look for "Patient:", "Name:", "Mr.", "Mrs.", "Ms." followed by a name)
-        - doctor_name: Extract doctor's name (look for "Dr.", "Doctor", medical credentials like MD, MBBS)
-        - medications: Array of objects with name, dosage, frequency (look for drug names followed by mg/ml/tablet, then dosing instructions like "twice daily", "morning", "evening")
-        - instructions: General instructions or notes (look for "Instructions:", "Note:", "Sig:", special directions)
+        - patient_name: Extract patient's name (look for Patient, Name, Mr, Mrs, Ms followed by a name)
+        - doctor_name: Extract doctor's name (look for Dr, Doctor, medical credentials like MD, MBBS)
+        - medications: Array of objects with name, dosage, frequency (look for drug names followed by mg/ml/tablet, then dosing instructions like twice daily, morning, evening)
+        - instructions: General instructions or notes (look for Instructions, Note, Sig, special directions)
         - date: Prescription date (look for date patterns like DD/MM/YYYY, MM-DD-YYYY)
         - pharmacy: Pharmacy name/address if mentioned
 
@@ -134,20 +134,7 @@ def analyze_with_ollama(text):
         - Look for frequency words: daily, twice, morning, evening, before/after meals
         - Common medications: Paracetamol, Ibuprofen, Amoxicillin, Metformin, etc.
 
-        Example format:
-        {
-          "patient_name": "John Doe",
-          "doctor_name": "Dr. Smith",
-          "medications": [
-            {"name": "Paracetamol", "dosage": "500mg", "frequency": "twice daily"},
-            {"name": "Amoxicillin", "dosage": "250mg", "frequency": "three times daily"}
-          ],
-          "instructions": "Take with food",
-          "date": "13/09/2025",
-          "pharmacy": "City Pharmacy"
-        }
-
-        Return ONLY the JSON object, no other text:
+        Return ONLY a valid JSON object with patient_name, doctor_name, medications array, instructions, date, and pharmacy fields.
         """
         
         payload = {
