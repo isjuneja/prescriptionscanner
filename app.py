@@ -101,7 +101,7 @@ def analyze_with_ollama(text):
         """
         
         payload = {
-            "model": "gemma2",
+            "model": "gemma3:latest",
             "prompt": prompt,
             "stream": False
         }

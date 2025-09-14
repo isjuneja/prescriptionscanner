@@ -12,7 +12,7 @@ import os
 import socket
 
 OLLAMA_URL = 'http://localhost:11434'
-MODEL_NAME = 'gemma2'
+MODEL_NAME = 'gemma3:latest'
 
 def check_port_open(host='localhost', port=11434):
     """Check if a specific port is open"""
