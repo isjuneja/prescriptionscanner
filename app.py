@@ -113,28 +113,45 @@ def analyze_with_ollama(text):
     """Analyze extracted text using Ollama Gemma3 model"""
     try:
         prompt = """
-        You are a medical prescription analyzer. Analyze this OCR-extracted text from a prescription image and extract key information.
+        You are an expert medical prescription analyzer. Analyze this OCR text from a prescription image.
 
-        IMPORTANT: This text may contain OCR errors, misspellings, and poor formatting. Look for patterns and context clues.
+        CRITICAL: This text has OCR errors, misspellings, broken words, and poor formatting. Be VERY aggressive in finding medication patterns even with errors.
 
         Text to analyze:
         """ + text + """
 
-        Extract and return ONLY a valid JSON object with these exact fields:
-        - patient_name: Extract patient's name (look for Patient, Name, Mr, Mrs, Ms followed by a name)
-        - doctor_name: Extract doctor's name (look for Dr, Doctor, medical credentials like MD, MBBS)
-        - medications: Array of objects with name, dosage, frequency (look for drug names followed by mg/ml/tablet, then dosing instructions like twice daily, morning, evening)
-        - instructions: General instructions or notes (look for Instructions, Note, Sig, special directions)
-        - date: Prescription date (look for date patterns like DD/MM/YYYY, MM-DD-YYYY)
-        - pharmacy: Pharmacy name/address if mentioned
+        AGGRESSIVE MEDICATION DETECTION - Look for ANY of these patterns:
+        1. Numbers followed by: mg, ml, mcg, gm, iu, units, tab, cap, syr, drop
+        2. Common Indian medications (even misspelled): Paracetamol/PCM/Crocin/Dolo, Ibuprofen/Combiflam, Amoxicillin/Augmentin, Azithromycin/Azee, Cefixime/Suprax, Ciprofloxacin, Metronidazole, Omeprazole/Pantoprazole, Cetirizine/Allegra, Salbutamol/Asthalin
+        3. Brand names: Crocin, Dolo, Combiflam, Augmentin, Azee, Suprax, Sporidex, Flagyl, Pantocid, Allegra, Asthalin, Sinarest, Vicks, Betadine
+        4. Any word ending in: -cillin, -mycin, -floxacin, -azole, -pine, -pram, -statin, -sartan
+        5. Words near: daily, twice, thrice, morning, evening, night, meal, food, empty stomach
+        6. Numbered lists (1., 2., 3.) often contain medications
+        7. Lines with dosage patterns like: 1-0-1, 1-1-1, BD, TDS, QDS, SOS, PRN
 
-        MEDICATION DETECTION TIPS:
-        - Look for common drug suffixes: -in, -ol, -ide, -ine, -one, -ate
-        - Look for dosage patterns: number + mg/ml/tablet/capsule
-        - Look for frequency words: daily, twice, morning, evening, before/after meals
-        - Common medications: Paracetamol, Ibuprofen, Amoxicillin, Metformin, etc.
+        FREQUENCY PATTERNS:
+        - BD/BID = twice daily
+        - TDS/TID = three times daily  
+        - QDS/QID = four times daily
+        - OD = once daily
+        - SOS/PRN = as needed
+        - 1-0-1 = morning-afternoon-evening pattern
 
-        Return ONLY a valid JSON object with patient_name, doctor_name, medications array, instructions, date, and pharmacy fields.
+        DOSAGE PATTERNS:
+        - Look for: 250mg, 500mg, 1gm, 5ml, 10ml, etc.
+        - Tab = tablet, Cap = capsule, Syr = syrup
+
+        Extract EVERY possible medication even if unsure. Better to include questionable items than miss real medications.
+
+        Return JSON with:
+        - patient_name: Patient name (look for names near Patient/Name/Mr/Mrs/Ms)
+        - doctor_name: Doctor name (look for Dr/Doctor + name, medical qualifications)  
+        - medications: Array with name, dosage, frequency for EVERY medication found
+        - instructions: Any dosing instructions or notes
+        - date: Any date mentioned
+        - pharmacy: Pharmacy/clinic name
+
+        BE AGGRESSIVE - if you see ANY word that could be a medication, include it!
         """
         
         payload = {
